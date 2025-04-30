@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-contract Counter {
-    uint256 public number;
+import {LibBytes} from "lib/solady/src/utils/LibBytes.sol";
 
+contract Counter {
     struct SomeStructRaw {
         uint256 one;
         uint256 two;
@@ -27,12 +27,24 @@ contract Counter {
     }
 
     SomeStructPacked public someStructPacked;
+    
 
-    function setNumber(uint256 newNumber) public {
-        number = newNumber;
+    function _storeStructCompressed(LibBytes.BytesStorage storage $, TokenPeriodSpend memory spend) internal {
+        LibBytes.set($, LibZip.cdCompress(abi.encode(spend)));
     }
 
-    function increment() public {
-        number++;
+    /// @dev Loads the spend struct.
+    function _loadStructCompressed(LibBytes.BytesStorage storage $)
+        internal
+        view
+        returns (TokenPeriodSpend memory spend)
+    {
+        bytes memory compressed = LibBytes.get($);
+        if (compressed.length != 0) {
+            bytes memory decoded = LibZip.cdDecompress(compressed);
+            assembly ("memory-safe") {
+                spend := add(decoded, 0x20) // Directly make `spend` point to the decoded.
+            }
+        }
     }
 }
