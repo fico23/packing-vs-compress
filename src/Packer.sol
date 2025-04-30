@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {LibBytes} from "solady/utils/LibBytes.sol";
 import {LibZip} from "solady/utils/LibZip.sol";
 
-contract Counter {
+contract Packer {
     struct SomeStructRaw {
         uint256 one;
         uint256 two;
@@ -38,7 +38,12 @@ contract Counter {
     }
 
     function _storeStructCompressed(LibBytes.BytesStorage storage $, SomeStructRaw memory someStructRaw) internal {
-        LibBytes.set($, LibZip.cdCompress(abi.encode(someStructRaw)));
+        bytes memory encoded = new bytes(256);
+        assembly ("memory-safe") {
+            mcopy(add(encoded, 0x20), someStructRaw, 256)
+        }
+
+        LibBytes.set($, LibZip.cdCompress(encoded));
     }
 
     /// @dev Loads the spend struct.
