@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {LibBytes} from "lib/solady/src/utils/LibBytes.sol";
+import {LibBytes} from "solady/utils/LibBytes.sol";
+import {LibZip} from "solady/utils/LibZip.sol";
 
 contract Counter {
     struct SomeStructRaw {
@@ -26,24 +27,31 @@ contract Counter {
         uint32 eight;
     }
 
-    SomeStructPacked public someStructPacked;
-    
+    LibBytes.BytesStorage public someStructPacked;
 
-    function _storeStructCompressed(LibBytes.BytesStorage storage $, TokenPeriodSpend memory spend) internal {
-        LibBytes.set($, LibZip.cdCompress(abi.encode(spend)));
+    function readStructRaw() public view returns (SomeStructRaw memory) {
+        return _loadStructCompressed(someStructPacked);
+    }
+
+    function writeStructRaw(SomeStructRaw memory someStructRaw) public {
+        _storeStructCompressed(someStructPacked, someStructRaw);
+    }
+
+    function _storeStructCompressed(LibBytes.BytesStorage storage $, SomeStructRaw memory someStructRaw) internal {
+        LibBytes.set($, LibZip.cdCompress(abi.encode(someStructRaw)));
     }
 
     /// @dev Loads the spend struct.
     function _loadStructCompressed(LibBytes.BytesStorage storage $)
         internal
         view
-        returns (TokenPeriodSpend memory spend)
+        returns (SomeStructRaw memory someStructRaw)
     {
         bytes memory compressed = LibBytes.get($);
         if (compressed.length != 0) {
             bytes memory decoded = LibZip.cdDecompress(compressed);
             assembly ("memory-safe") {
-                spend := add(decoded, 0x20) // Directly make `spend` point to the decoded.
+                someStructRaw := add(decoded, 0x20) // Directly make `spend` point to the decoded.
             }
         }
     }
