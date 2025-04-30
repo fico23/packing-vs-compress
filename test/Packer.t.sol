@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import {Test, console} from "forge-std/Test.sol";
 import {Packer} from "../src/Packer.sol";
 import {PackerOld} from "../src/PackerOld.sol";
+
 contract PackerTest is Test {
     Packer public packer;
     PackerOld public packerOld;
@@ -14,16 +15,8 @@ contract PackerTest is Test {
     }
 
     function test_readStructRaw() public {
-        Packer.SomeStructRaw memory someStructRaw = Packer.SomeStructRaw({
-            one: 1,
-            two: 2,
-            three: 3,
-            four: 4,
-            five: 5,
-            six: 6,
-            seven: 7,
-            eight: 8
-        });
+        Packer.SomeStructRaw memory someStructRaw =
+            Packer.SomeStructRaw({one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8});
 
         packer.writeStructRaw(someStructRaw);
         vm.snapshotGasLastCall("readStructRaw - write");
@@ -40,16 +33,8 @@ contract PackerTest is Test {
     }
 
     function test_readStructPacked() public {
-        PackerOld.SomeStructPacked memory someStructPacked = PackerOld.SomeStructPacked({
-            one: 1,
-            two: 2,
-            three: 3,
-            four: 4,
-            five: 5,
-            six: 6,
-            seven: 7,
-            eight: 8
-        });
+        PackerOld.SomeStructPacked memory someStructPacked =
+            PackerOld.SomeStructPacked({one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8});
 
         packerOld.writeStruct(someStructPacked);
         vm.snapshotGasLastCall("readStructPacked - write");
